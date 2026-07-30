@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Approval Peminjaman Mobil - Integra Solusi Mandiri</title>
+<style>
+  :root{
+    --red:#8a1116; --orange:#f07d1a; --green:#1e7a3c;
+    --ink:#1f2226; --line:#c9ccd1; --bg:#eef0f2; --card:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  .page{max-width:700px;margin:32px auto;padding:0 12px 60px;}
+
+  /* HEADER */
+  .header-card{background:var(--red);color:#fff;border-radius:10px 10px 0 0;padding:20px 28px;display:flex;align-items:center;gap:16px;}
+  .header-card .logo svg{width:52px;height:52px;}
+  .header-card h1{margin:0;font-size:20px;letter-spacing:.5px;}
+  .header-card .sub{font-size:12px;opacity:.85;margin-top:3px;}
+
+  /* STATUS BANNER */
+  .status-banner{padding:14px 28px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;}
+  .status-banner.pending{background:#fff3cd;color:#856404;border-left:5px solid #ffc107;}
+  .status-banner.approved1{background:#cff4fc;color:#055160;border-left:5px solid #0dcaf0;}
+  .status-banner.approved2{background:#d1e7dd;color:#0a3622;border-left:5px solid #198754;}
+  .status-banner.rejected{background:#f8d7da;color:#842029;border-left:5px solid #dc3545;}
+  .status-banner.done{background:#d1e7dd;color:#0a3622;border-left:5px solid #198754;}
+
+  /* CARD */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden;}
+  .card-head{padding:12px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;}
+  .card-head.red{background:#fdf3f3;color:var(--red);}
+  .card-head.orange{background:#fdf8f2;color:var(--orange);}
+  .card-head.green{background:#f2fbf5;color:var(--green);}
+  .card-body{padding:14px 18px;}
+
+  .row{display:flex;gap:8px;margin-bottom:8px;font-size:13px;align-items:baseline;}
+  .row .lbl{width:160px;flex:none;color:#666;}
+  .row .val{font-weight:600;color:var(--ink);flex:1;}
+
+  /* SIM PHOTO */
+  .sim-photo{max-width:260px;border-radius:6px;border:1px solid var(--line);margin-top:8px;}
+
+  /* TTD */
+  .ttd-box{border:1px solid var(--line);border-radius:6px;padding:10px;margin-top:8px;background:#fafafa;}
+  .ttd-box img{max-width:200px;height:60px;object-fit:contain;}
+  .ttd-box .no-ttd{color:#aaa;font-size:12px;font-style:italic;}
+
+  /* APPROVAL SECTION */
+  .approval-section{background:var(--card);border:2px solid var(--orange);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
+  .approval-section h3{margin:0 0 14px;font-size:15px;color:var(--orange);}
+  .approval-section.disabled{opacity:.5;pointer-events:none;}
+
+  /* SIG PAD */
+  .sig-wrap{margin:10px 0;}
+  .sig-label{font-size:12px;color:#555;margin-bottom:4px;}
+  .sig-canvas{border:1px dashed #888;border-radius:4px;width:100%;height:80px;background:#fafafa;cursor:crosshair;touch-action:none;display:block;}
+  .sig-canvas.signed{border-color:var(--ink);background:#fff;}
+  .sig-actions{display:flex;gap:6px;margin-top:4px;}
+  .sig-actions button{font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--line);background:#fff;color:#444;}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+  .field label{font-size:12.5px;font-weight:600;color:#444;}
+  .field input,.field textarea{border:1px solid var(--line);border-radius:5px;padding:7px 10px;font-size:13px;font-family:inherit;}
+  .field textarea{resize:vertical;min-height:60px;}
+
+  .btn-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+  .btn{padding:12px 24px;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;flex:1;min-width:120px;}
+  .btn.approve{background:var(--green);color:#fff;}
+  .btn.reject{background:var(--red);color:#fff;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;filter:none;}
+
+  /* APPROVAL TIMELINE */
+  .timeline{display:flex;flex-direction:column;gap:0;}
+  .tl-item{display:flex;gap:14px;padding-bottom:16px;position:relative;}
+  .tl-item::before{content:"";position:absolute;left:15px;top:30px;bottom:0;width:2px;background:var(--line);}
+  .tl-item:last-child::before{display:none;}
+  .tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;margin-top:2px;border:2px solid var(--line);background:#fff;}
+  .tl-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+  .tl-dot.rejected{background:var(--red);border-color:var(--red);color:#fff;}
+  .tl-dot.pending{background:#fff3cd;border-color:#ffc107;}
+  .tl-dot.waiting{background:#f5f5f5;border-color:#ddd;color:#aaa;}
+  .tl-content .tl-title{font-weight:700;font-size:13px;}
+  .tl-content .tl-time{font-size:11px;color:#888;margin-top:2px;}
+  .tl-content .tl-note{font-size:12px;color:#555;margin-top:3px;}
+
+  .done-card{background:#d1e7dd;border:2px solid var(--green);border-radius:10px;padding:20px 24px;text-align:center;}
+  .done-card h2{color:var(--green);margin:0 0 6px;}
+  .done-card p{color:#0a3622;margin:0;font-size:13px;}
+  .error-card{background:#f8d7da;border:2px solid var(--red);border-radius:10px;padding:20px 24px;text-align:center;}
+  .error-card h2{color:var(--red);margin:0 0 6px;}
+
+  .loader{text-align:center;padding:60px;color:#888;font-size:14px;}
+  .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <div class="logo">
+      <svg viewBox="0 0 100 100"><polygon points="50,4 96,50 50,96 4,50" fill="#f07d1a"/><polygon points="50,20 80,50 50,80 20,50" fill="#fff" opacity=".3"/><polygon points="50,36 64,50 50,64 36,50" fill="#f5a623"/></svg>
+    </div>
+    <div>
+      <h1>Approval Peminjaman Mobil</h1>
+      <div class="sub">PT Integra Solusi Mandiri</div>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div id="content">
+    <div class="loader">
+      <div class="spinner"></div><br>
+      Memuat data peminjaman...
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx45OeyFD61yF2v1tfVHgVFttiRjznSvSd5NLizZ8uR1Pb1xdOrDvOQFsT62xWKzOuNzQ/exec"
+};
+
+// Ambil token & role dari URL: approval.html?token=XXX&role=1 atau role=2
+const params = new URLSearchParams(window.location.search);
+const TOKEN  = params.get('token') || '';
+const ROLE   = parseInt(params.get('role') || '1'); // 1=approver1, 2=approver2
+
+let formData = null;
+let sigPad   = null;
+
+/* ================================================================
+   LOAD DATA
+   ================================================================ */
+async function loadData(){
+  if(!TOKEN){
+    renderError("Link tidak valid. Token tidak ditemukan.");
+    return;
+  }
+  try{
+    const res  = await fetch(`${CONFIG.SCRIPT_URL}?action=getApprovalData&token=${TOKEN}`);
+    const json = await res.json();
+    if(json.error){ renderError(json.error); return; }
+    formData = json.data;
+    renderPage();
+  }catch(e){
+    renderError("Gagal memuat data. Periksa koneksi internet Anda.");
+  }
+}
+
+/* ================================================================
+   RENDER HALAMAN APPROVAL
+   ================================================================ */
+function renderPage(){
+  const d = formData;
+  const status = d.approvalStatus || 'pending'; // pending | approved1 | approved2 | rejected
+  const canAct = (
+    (ROLE===1 && status==='pending') ||
+    (ROLE===2 && status==='approved1')
+  );
+
+  let statusText = '', statusClass = '';
+  if(status==='pending')    { statusText='⏳ Menunggu Approval Tahap 1'; statusClass='pending'; }
+  if(status==='approved1')  { statusText='✅ Tahap 1 Disetujui — Menunggu Approval Tahap 2'; statusClass='approved1'; }
+  if(status==='approved2')  { statusText='✅✅ Disetujui Penuh — Selesai'; statusClass='done'; }
+  if(status==='rejected')   { statusText='❌ Ditolak'; statusClass='rejected'; }
+
+  const alreadyDone = !canAct;
+
+  document.getElementById('content').innerHTML = `
+
+    <!-- STATUS BANNER -->
+    <div class="status-banner ${statusClass}">${statusText}</div>
+
+    <!-- INFO PEMINJAMAN -->
+    <div class="card">
+      <div class="card-head red">📋 Data Peminjaman</div>
+      <div class="card-body">
+        <div class="row"><span class="lbl">No. Form</span><span class="val">${d.noForm||'-'}</span></div>
+        <div class="row"><span class="lbl">Tanggal Form</span><span class="val">${d.tanggalForm||'-'}</span></div>
+        <div class="row"><span class="lbl">Nama Peminjam</span><span class="val">${d.nama||'-'}</span></div>
+        <div class="row"><span class="lbl">Perusahaan</span><span class="val">${d.perusahaan||'-'}</span></div>
+        <div class="row"><span class="lbl">Jabatan</span><span class="val">${d.jabatan||'-'}</span></div>
+        <div class="row"><span class="lbl">Email</span><span class="val">${d.email||'-'}</span></div>
+        <div class="row"><span class="lbl">No. Telepon</span><span class="val">${d.telepon||'-'}</span></div>
+        <div class="row"><span class="lbl">Tujuan Penggunaan</span><span class="val">${d.tujuan||'-'}</span></div>
+        <div class="row"><span class="lbl">Tanggal Mulai</span><span class="val">${d.tglMulai||'-'}</span></div>
+        <div class="row"><span class="lbl">Tanggal Selesai</span><span class="val">${d.tglSelesai||'-'}</span></div>
+        <div class="row"><span class="lbl">Durasi</span><span class="val">${d.durasi||'-'} hari</span></div>
+        <div class="row"><span class="lbl">Lokasi Jemput</span><span class="val">${d.lokasiJemput||'-'}</span></div>
+        <div class="row"><span class="lbl">Dengan Driver</span><span class="val">${d.denganDriver||'-'}</span></div>
+      </div>
+    </div>
+
+    <!-- KENDARAAN -->
+    <div class="card">
+      <div class="card-head orange">🚗 Kendaraan</div>
+      <div class="card-body">
+        <div class="row"><span class="lbl">Jenis</span><span class="val">${d.jenis||'-'}</span></div>
+        <div class="row"><span class="lbl">Merk/Type</span><span class="val">${d.merk||'-'}</span></div>
+        <div class="row"><span class="lbl">Nomor Polisi</span><span class="val">${d.nopol||'-'}</span></div>
+        <div class="row"><span class="lbl">Warna / Tahun</span><span class="val">${d.warna||'-'} / ${d.tahun||'-'}</span></div>
+        <div class="row"><span class="lbl">KM Awal</span><span class="val">${d.kmAwal||'-'}</span></div>
+        <div class="row"><span class="lbl">Level Bensin</span><span class="val">${d.levelBensin||'-'}%</span></div>
+        <div class="row"><span class="lbl">Catatan Kondisi</span><span class="val">${d.catatanKondisi||'-'}</span></div>
+      </div>
+    </div>
+
+    <!-- FOTO SIM -->
+    <div class="card">
+      <div class="card-head orange">📷 Foto SIM</div>
+      <div class="card-body">
+        ${d.fotoSimUrl
+          ? `<img class="sim-photo" src="${d.fotoSimUrl}" alt="Foto SIM">`
+          : `<div style="color:#aaa;font-size:13px;font-style:italic;">Foto SIM tidak dilampirkan.</div>`
+        }
+      </div>
+    </div>
+
+    <!-- TTD PEMINJAM -->
+    <div class="card">
+      <div class="card-head green">✍️ Tanda Tangan Serah Terima</div>
+      <div class="card-body">
+        <div class="row"><span class="lbl">Diserahkan oleh</span><span class="val">${d.namaDari||'-'} (${d.jabatanDari||'-'})</span></div>
+        <div class="ttd-box">
+          ${d.ttdDari ? `<img src="${d.ttdDari}" alt="TTD Penyerah">` : '<div class="no-ttd">Tidak ada TTD</div>'}
+        </div>
+        <div class="row" style="margin-top:12px;"><span class="lbl">Diterima oleh</span><span class="val">${d.namaKe||'-'} (${d.jabatanKe||'-'})</span></div>
+        <div class="ttd-box">
+          ${d.ttdKe ? `<img src="${d.ttdKe}" alt="TTD Penerima">` : '<div class="no-ttd">Tidak ada TTD</div>'}
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE APPROVAL -->
+    <div class="card">
+      <div class="card-head green">📊 Status Approval</div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot ${['approved1','approved2'].includes(status)?'done':status==='rejected'&&ROLE===1?'rejected':'pending'}">
+              ${['approved1','approved2'].includes(status)?'✓':status==='rejected'&&ROLE===1?'✕':'1'}
+            </div>
+            <div class="tl-content">
+              <div class="tl-title">Approval Tahap 1 — ${d.approver1Name||'Approver 1'}</div>
+              <div class="tl-time">${d.approvedAt1||'Menunggu...'}</div>
+              <div class="tl-note">${d.approveNote1||''}</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot ${status==='approved2'?'done':status==='rejected'&&ROLE===2?'rejected':status==='approved1'?'pending':'waiting'}">
+              ${status==='approved2'?'✓':status==='rejected'&&ROLE===2?'✕':status==='approved1'?'2':'2'}
+            </div>
+            <div class="tl-content">
+              <div class="tl-title">Approval Tahap 2 — ${d.approver2Name||'Approver 2'}</div>
+              <div class="tl-time">${d.approvedAt2||'Menunggu...'}</div>
+              <div class="tl-note">${d.approveNote2||''}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AKSI APPROVAL (hanya tampil jika giliran approver ini) -->
+    ${canAct ? `
+    <div class="approval-section" id="actionSection">
+      <h3>✍️ Tindakan Anda — ${ROLE===1?'Approval Tahap 1':'Approval Tahap 2'}</h3>
+      <div class="field">
+        <label>Nama Approver</label>
+        <input type="text" id="apName" value="${ROLE===1?(d.approver1Name||''):(d.approver2Name||'')}" readonly style="background:#f5f5f5;">
+      </div>
+      <div class="field">
+        <label>Catatan / Komentar</label>
+        <textarea id="apNote" placeholder="Opsional: tambahkan catatan approval atau alasan penolakan"></textarea>
+      </div>
+      <div class="sig-wrap">
+        <div class="sig-label">Tanda Tangan Digital Approver :</div>
+        <canvas class="sig-canvas" id="sigApprover" width="400" height="80"></canvas>
+        <div class="sig-actions">
+          <button onclick="clearSigAp()">🗑️ Hapus TTD</button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn approve" id="btnApprove" onclick="doApprove()">✅ SETUJU</button>
+        <button class="btn reject"  id="btnReject"  onclick="doReject()">❌ TOLAK</button>
+      </div>
+    </div>
+    ` : alreadyDone && status!=='pending' && status!=='approved1' ? `
+    <div class="${status==='rejected'?'error-card':'done-card'}">
+      ${status==='rejected'
+        ? '<h2>❌ Peminjaman Ditolak</h2><p>Form ini sudah mendapat keputusan penolakan.</p>'
+        : '<h2>✅ Peminjaman Disetujui</h2><p>Form ini sudah mendapat persetujuan penuh dari semua approver.</p>'
+      }
+    </div>
+    ` : `
+    <div class="status-banner pending" style="border-radius:8px;margin-bottom:0;">
+      ⏳ Bukan giliran Anda, atau Anda sudah melakukan approval. Menunggu proses selanjutnya.
+    </div>
+    `}
+  `;
+
+  // Init signature pad setelah render
+  if(canAct) initSigApprover();
+}
+
+/* ================================================================
+   SIGNATURE PAD
+   ================================================================ */
+function initSigApprover(){
+  const canvas = document.getElementById('sigApprover');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    const scale = window.devicePixelRatio||1;
+    canvas.width = rect.width*scale; canvas.height = rect.height*scale;
+    ctx.scale(scale,scale);
+  }
+  resize();
+  let drawing=false, lx=0, ly=0;
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return {x:src.clientX-rect.left, y:src.clientY-rect.top};
+  }
+  function start(e){e.preventDefault();drawing=true;const p=getPos(e);lx=p.x;ly=p.y;}
+  function move(e){
+    if(!drawing) return; e.preventDefault();
+    const p=getPos(e);
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle='#1f2226';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.stroke();
+    lx=p.x;ly=p.y;canvas.classList.add('signed');
+  }
+  function end(){drawing=false;}
+  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); canvas.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',end);
+  sigPad = {canvas,ctx};
+}
+function clearSigAp(){
+  if(!sigPad) return;
+  sigPad.ctx.clearRect(0,0,sigPad.canvas.width,sigPad.canvas.height);
+  sigPad.canvas.classList.remove('signed');
+}
+function getSigApData(){
+  if(!sigPad) return null;
+  const d=sigPad.canvas.getContext('2d').getImageData(0,0,sigPad.canvas.width,sigPad.canvas.height).data;
+  return Array.from(d).some((v,i)=>i%4===3&&v>0) ? sigPad.canvas.toDataURL('image/png') : null;
+}
+
+/* ================================================================
+   APPROVE / REJECT
+   ================================================================ */
+async function doApprove(){
+  await submitDecision('approve');
+}
+async function doReject(){
+  const note = document.getElementById('apNote').value;
+  if(!note){ alert("Mohon isi catatan/alasan penolakan."); return; }
+  await submitDecision('reject');
+}
+
+async function submitDecision(decision){
+  const btnA = document.getElementById('btnApprove');
+  const btnR = document.getElementById('btnReject');
+  btnA.disabled=true; btnR.disabled=true;
+  btnA.textContent='Memproses...'; btnR.textContent='Memproses...';
+
+  const payload = {
+    action: 'submitApproval',
+    token: TOKEN,
+    role: ROLE,
+    decision: decision,
+    approverNote: document.getElementById('apNote').value,
+    ttdApprover: getSigApData()
+  };
+
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if(json.status==='ok'){
+      document.getElementById('actionSection').innerHTML = `
+        <div class="${decision==='approve'?'done-card':'error-card'}" style="margin:0;">
+          ${decision==='approve'
+            ? `<h2>✅ Approval Berhasil</h2><p>Keputusan Anda sudah dicatat. ${ROLE===1?'Email dikirim ke Approver 2.':'Email konfirmasi dikirim ke peminjam.'}</p>`
+            : `<h2>❌ Penolakan Berhasil Dicatat</h2><p>Email notifikasi penolakan dikirim ke peminjam.</p>`
+          }
+        </div>`;
+    } else {
+      alert("Gagal: " + (json.error||'Unknown error'));
+      btnA.disabled=false; btnR.disabled=false;
+      btnA.textContent='✅ SETUJU'; btnR.textContent='❌ TOLAK';
+    }
+  }catch(e){
+    alert("Gagal mengirim. Periksa koneksi Anda.");
+    btnA.disabled=false; btnR.disabled=false;
+    btnA.textContent='✅ SETUJU'; btnR.textContent='❌ TOLAK';
+  }
+}
+
+/* ================================================================
+   ERROR
+   ================================================================ */
+function renderError(msg){
+  document.getElementById('content').innerHTML = `
+    <div class="error-card" style="margin-top:16px;">
+      <h2>⚠️ Terjadi Kesalahan</h2>
+      <p>${msg}</p>
+    </div>`;
+}
+
+// Start
+loadData();
+</script>
+</body>
+</html>
