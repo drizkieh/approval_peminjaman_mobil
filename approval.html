@@ -189,7 +189,9 @@ function renderPage(){
         <div class="row"><span class="lbl">No. Telepon</span><span class="val">${d.telepon||'-'}</span></div>
         <div class="row"><span class="lbl">Tujuan Penggunaan</span><span class="val">${d.tujuan||'-'}</span></div>
         <div class="row"><span class="lbl">Tanggal Mulai</span><span class="val">${d.tglMulai||'-'}</span></div>
+        <div class="row"><span class="lbl">Jam Peminjaman</span><span class="val">${d.waktuMulai||'-'}</span></div>
         <div class="row"><span class="lbl">Tanggal Selesai</span><span class="val">${d.tglSelesai||'-'}</span></div>
+        <div class="row"><span class="lbl">Estimasi Jam Pengembalian</span><span class="val">${d.waktuSelesai||'-'}</span></div>
         <div class="row"><span class="lbl">Durasi</span><span class="val">${d.durasi||'-'} hari</span></div>
         <div class="row"><span class="lbl">Lokasi Jemput</span><span class="val">${d.lokasiJemput||'-'}</span></div>
         <div class="row"><span class="lbl">Dengan Driver</span><span class="val">${d.denganDriver||'-'}</span></div>
@@ -217,6 +219,17 @@ function renderPage(){
         ${d.fotoSimUrl
           ? `<img class="sim-photo" src="${d.fotoSimUrl}" alt="Foto SIM">`
           : `<div style="color:#aaa;font-size:13px;font-style:italic;">Foto SIM tidak dilampirkan.</div>`
+        }
+      </div>
+    </div>
+
+    <!-- FOTO INDIKATOR BENSIN -->
+    <div class="card">
+      <div class="card-head orange">⛽ Foto Indikator Bensin</div>
+      <div class="card-body">
+        ${d.fotoBensinUrl
+          ? `<img class="sim-photo" src="${d.fotoBensinUrl}" alt="Foto Indikator Bensin">`
+          : `<div style="color:#aaa;font-size:13px;font-style:italic;">Foto indikator bensin tidak dilampirkan.</div>`
         }
       </div>
     </div>
