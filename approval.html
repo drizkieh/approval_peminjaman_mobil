@@ -388,7 +388,10 @@ async function submitDecision(decision){
     role: ROLE,
     decision: decision,
     approverNote: document.getElementById('apNote').value,
-    ttdApprover: getSigApData()
+    ttdApprover: getSigApData(),
+    noForm: formData ? (formData.noForm || '') : '',
+    peminjamNama: formData ? (formData.nama || '') : '',
+    peminjamEmail: formData ? (formData.email || '') : ''
   };
 
   try{
