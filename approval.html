@@ -382,16 +382,23 @@ async function submitDecision(decision){
   btnA.disabled=true; btnR.disabled=true;
   btnA.textContent='Memproses...'; btnR.textContent='Memproses...';
 
+  const noteVal = (document.getElementById('apNote') ? document.getElementById('apNote').value : '').trim();
+  const note1 = ROLE === 1 ? noteVal : (formData ? (formData.approveNote1 || '') : '');
+  const note2 = ROLE === 2 ? noteVal : (formData ? (formData.approveNote2 || '') : '');
+
   const payload = {
     action: 'submitApproval',
     token: TOKEN,
     role: ROLE,
     decision: decision,
-    approverNote: document.getElementById('apNote').value,
+    approverNote: noteVal,
+    note1: note1,
+    note2: note2,
     ttdApprover: getSigApData(),
     noForm: formData ? (formData.noForm || '') : '',
     peminjamNama: formData ? (formData.nama || '') : '',
-    peminjamEmail: formData ? (formData.email || '') : ''
+    peminjamEmail: formData ? (formData.email || '') : '',
+    submission: formData || {}
   };
 
   try{
